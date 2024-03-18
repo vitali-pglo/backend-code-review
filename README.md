@@ -5,10 +5,11 @@ It serves as an example with some bad practices included.
 
 ## Tasks
 
-- [ ] Fork the repository and create a PR with your changes to this Repository
+- [ ] Clone the repository or [download the code](https://github.com/cutlery42/backend-code-review/archive/refs/heads/main.zip)
   - [ ] Handle all [open issues](https://github.com/cutlery42/backend-code-review/issues) in the project
   - [ ] Make `vendor/bin/phpstan` pass without errors
   - [ ] Make `vendor/bin/phpunit` pass without errors
+  - [ ] Upload the code to your own Repository (Avoid forking the repository and creating a PR, as this would make your solution visible to others)]
 
 ## Install
 
