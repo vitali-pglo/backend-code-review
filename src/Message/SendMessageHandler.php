@@ -12,10 +12,10 @@ use Symfony\Component\Uid\Uuid;
 /**
  * TODO: Cover with a test
  */
-class SendMessageHandler
+readonly class SendMessageHandler
 {
     public function __construct(
-        private readonly EntityManagerInterface $manager,
+        private EntityManagerInterface $manager,
     ) { }
     
     public function __invoke(SendMessage $sendMessage): void
