@@ -2,52 +2,53 @@
 
 namespace App\Entity;
 
+use App\Message\MessageStatus;
 use App\Repository\MessageRepository;
 use DateTime;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Uid\Uuid;
 
 #[ORM\Entity(repositoryClass: MessageRepository::class)]
-/**
- * TODO: Review Message class
- */
+#[ORM\HasLifecycleCallbacks]
 class Message
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
-    private ?int $id = null;
+    private int $id;
 
     #[ORM\Column(type: Types::GUID)]
-    private ?string $uuid = null;
+    private string $uuid;
+
+    // TODO: I would rename it "body".
+    #[ORM\Column(length: 255)]
+    private string $text;
 
     #[ORM\Column(length: 255)]
-    private ?string $text = null;
-
-    #[ORM\Column(length: 255, nullable: true)]
-    private ?string $status = null;
+    private MessageStatus $status = MessageStatus::PENDING;
     
     #[ORM\Column(type: 'datetime')]
     private DateTime $createdAt;
 
-    public function getId(): ?int
+    #[ORM\PrePersist]
+    public function onPrePersist(): void
+    {
+        $this->createdAt = new DateTime();
+        $this->uuid = Uuid::v6()->toRfc4122();
+    }
+
+    public function getId(): int
     {
         return $this->id;
     }
 
-    public function getUuid(): ?string
+    public function getUuid(): string
     {
         return $this->uuid;
     }
 
-    public function setUuid(string $uuid): static
-    {
-        $this->uuid = $uuid;
-
-        return $this;
-    }
-
-    public function getText(): ?string
+    public function getText(): string
     {
         return $this->text;
     }
@@ -59,12 +60,12 @@ class Message
         return $this;
     }
 
-    public function getStatus(): ?string
+    public function getStatus(): MessageStatus
     {
         return $this->status;
     }
 
-    public function setStatus(string $status): static
+    public function setStatus(MessageStatus $status): static
     {
         $this->status = $status;
 
@@ -74,12 +75,5 @@ class Message
     public function getCreatedAt(): DateTime
     {
         return $this->createdAt;
-    }
-
-    public function setCreatedAt(DateTime $createdAt): static
-    {
-        $this->createdAt = $createdAt;
-        
-        return $this;
     }
 }
