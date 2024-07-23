@@ -3,15 +3,16 @@ declare(strict_types=1);
 
 namespace App\Controller;
 
-use App\Message\SendMessage;
-use App\Repository\MessageRepository;
+use App\Common\Response\InvalidRequest;
+use App\Message\MessageStatus;
+use App\Services\MessageService;
 use Controller\MessageControllerTest;
-use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\Messenger\MessageBusInterface;
+use Symfony\Component\Messenger\Exception\ExceptionInterface;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Serializer\SerializerInterface;
 
 /**
  * @see MessageControllerTest
@@ -20,38 +21,54 @@ use Symfony\Component\Routing\Attribute\Route;
  */
 class MessageController extends AbstractController
 {
+    public function __construct(
+        private readonly MessageService      $messageService,
+        private readonly SerializerInterface $serializer,
+        private readonly InvalidRequest      $invalidRequest
+    )
+    {
+    }
+
     /**
      * TODO: cover this method with tests, and refactor the code (including other files that need to be refactored)
      */
-    #[Route('/messages')]
-    public function list(Request $request, MessageRepository $messages): Response
+    #[Route('/messages', methods: ['GET'])]
+    public function list(Request $request): Response
     {
-        $messages = $messages->by($request);
-  
-        foreach ($messages as $key=>$message) {
-            $messages[$key] = [
-                'uuid' => $message->getUuid(),
-                'text' => $message->getText(),
-                'status' => $message->getStatus(),
-            ];
+        $page = $request->query->getInt('page', 1);
+        $status = $request->query->getInt('status') ?: null;
+
+        if ($status) {
+            try {
+                $status = MessageStatus::from($status) ?? null;
+            } catch (\ValueError $exception) {
+                $this->invalidRequest->setErrors(["Invalid status"]);
+                return new Response($this->serializer->serialize($this->invalidRequest, 'json'), 400, headers: ['Content-Type' => 'application/json']);
+            }
         }
-        
-        return new Response(json_encode([
-            'messages' => $messages,
-        ], JSON_THROW_ON_ERROR), headers: ['Content-Type' => 'application/json']);
+
+        $messages = $this->messageService->getPaginated($status, $page);
+
+        return new Response($this->serializer->serialize($messages, 'json'), headers: ['Content-Type' => 'application/json']);
     }
 
-    #[Route('/messages/send', methods: ['GET'])]
-    public function send(Request $request, MessageBusInterface $bus): Response
+    /**
+     * @throws ExceptionInterface
+     */
+    #[Route('/messages', methods: ['POST'])]
+    public function send(Request $request): Response
     {
-        $text = $request->query->get('text');
-        
+        $text = $request->request->get('text');
+
         if (!$text) {
-            return new Response('Text is required', 400);
+            $this->invalidRequest->setErrors(["Text is required"]);
+            return new Response($this->serializer->serialize($this->invalidRequest, 'json'), 400, headers: ['Content-Type' => 'application/json']);
         }
 
-        $bus->dispatch(new SendMessage($text));
-        
-        return new Response('Successfully sent', 204);
+        $this->messageService->send($text);
+
+        return new Response(json_encode([
+            'message' => 'Successfully sent'
+        ]), 200);
     }
 }

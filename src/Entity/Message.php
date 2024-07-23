@@ -8,6 +8,7 @@ use DateTime;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Uid\Uuid;
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: MessageRepository::class)]
 #[ORM\HasLifecycleCallbacks]
@@ -23,10 +24,12 @@ class Message
 
     // TODO: I would rename it "body".
     #[ORM\Column(length: 255)]
+    #[Assert\NotBlank]
+    #[Assert\Length(min: 1, max: 255)]
     private string $text;
 
     #[ORM\Column(length: 255)]
-    private MessageStatus $status = MessageStatus::PENDING;
+    private MessageStatus $status = MessageStatus::SENT;
     
     #[ORM\Column(type: 'datetime')]
     private DateTime $createdAt;

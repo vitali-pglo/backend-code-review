@@ -6,8 +6,11 @@ namespace App\Message;
 class SendMessage
 {
     public function __construct(
-        public string $text,
-    )
+        private readonly string $text,
+    ) { }
+
+    public function getText(): string
     {
+        return $this->text;
     }
 }

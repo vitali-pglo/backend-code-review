@@ -14,14 +14,14 @@ use Symfony\Component\Uid\Uuid;
  */
 class SendMessageHandler
 {
-    public function __construct(private EntityManagerInterface $manager)
-    {
-    }
+    public function __construct(
+        private readonly EntityManagerInterface $manager,
+    ) { }
     
     public function __invoke(SendMessage $sendMessage): void
     {
         $message = new Message();
-        $message->setText($sendMessage->text);
+        $message->setText($sendMessage->getText());
         $message->setStatus(MessageStatus::SENT);
 
         $this->manager->persist($message);

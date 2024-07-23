@@ -4,8 +4,6 @@ namespace App\Message;
 
 enum MessageStatus: int
 {
-    case PENDING = 1;
-    case SENT = 2;
-    case DELIVERED = 3;
-    case READ = 4;
+    case SENT = 1;
+    case READ = 2;
 }
