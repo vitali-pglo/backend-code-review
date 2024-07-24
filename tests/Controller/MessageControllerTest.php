@@ -8,6 +8,7 @@ use App\Common\Response\PaginatedResponse;
 use App\Controller\MessageController;
 use App\Message\MessageStatus;
 use App\Services\MessageService;
+use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
@@ -18,10 +19,10 @@ class MessageControllerTest extends WebTestCase
 {
     use InteractsWithMessenger;
 
-    private $messageService;
-    private $serializer;
-    private $invalidRequest;
-    private $controller;
+    private MessageService $messageService;
+    private SerializerInterface $serializer;
+    private InvalidRequest $invalidRequest;
+    private AbstractController $controller;
 
     protected function setUp(): void
     {
@@ -35,7 +36,7 @@ class MessageControllerTest extends WebTestCase
         );
     }
 
-    public function testListWithValidStatus()
+    public function testListWithValidStatus(): void
     {
         $request = new Request(['status' => 1, 'page' => 1]);
         $paginatedResponse = $this->createMock(PaginatedResponse::class);
@@ -78,6 +79,11 @@ class MessageControllerTest extends WebTestCase
         ]);
     }
 
+    /**
+     * @param Response $response
+     * @param mixed[] $expectedData
+     * @return void
+     */
     private function assertJsonResponse(Response $response, array $expectedData): void
     {
         $data = json_decode($response->getContent(), true);

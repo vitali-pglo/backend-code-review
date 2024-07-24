@@ -3,6 +3,7 @@
 namespace App\DataFixtures;
 
 use App\Entity\Message;
+use App\Message\MessageStatus;
 use Doctrine\Bundle\FixturesBundle\Fixture;
 use Doctrine\Persistence\ObjectManager;
 use Faker\Factory;
@@ -18,7 +19,7 @@ class AppFixtures extends Fixture
         foreach (range(1, 10) as $i) {
             $message = new Message();
             $message->setText($faker->sentence);
-            $message->setStatus(random(['sent', 'read']));
+            $message->setStatus(random([MessageStatus::SENT, MessageStatus::READ]));
             
             $manager->persist($message);
         }

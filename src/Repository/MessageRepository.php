@@ -42,7 +42,7 @@ class MessageRepository extends ServiceEntityRepository
 
         $qb->setMaxResults($limit)->setFirstResult($offset);
 
-        $this->paginatedResponse->setTotal($totalCountQ->getQuery()->getSingleScalarResult());
+        $this->paginatedResponse->setTotal((int)$totalCountQ->getQuery()->getSingleScalarResult());
         $this->paginatedResponse->setData($qb->getQuery()->getResult());
 
         return $this->paginatedResponse;

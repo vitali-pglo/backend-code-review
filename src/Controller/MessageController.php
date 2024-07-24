@@ -6,7 +6,6 @@ namespace App\Controller;
 use App\Common\Response\InvalidRequest;
 use App\Message\MessageStatus;
 use App\Services\MessageService;
-use Controller\MessageControllerTest;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -40,7 +39,7 @@ class MessageController extends AbstractController
 
         if ($status) {
             try {
-                $status = MessageStatus::from($status) ?? null;
+                $status = MessageStatus::from($status);
             } catch (\ValueError $exception) {
                 $this->invalidRequest->setErrors(["Invalid status"]);
                 return new Response($this->serializer->serialize($this->invalidRequest, 'json'), 400, headers: ['Content-Type' => 'application/json']);
@@ -65,10 +64,10 @@ class MessageController extends AbstractController
             return new Response($this->serializer->serialize($this->invalidRequest, 'json'), 400, headers: ['Content-Type' => 'application/json']);
         }
 
-        $this->messageService->send($text);
+        $this->messageService->send((string)$text);
 
         return new Response(json_encode([
             'message' => 'Successfully sent'
-        ]), 200);
+        ]) ?: null, 200);
     }
 }
