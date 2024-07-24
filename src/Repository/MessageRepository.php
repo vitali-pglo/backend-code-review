@@ -19,11 +19,14 @@ use Doctrine\Persistence\ManagerRegistry;
  */
 class MessageRepository extends ServiceEntityRepository
 {
+    private readonly ManagerRegistry $registry;
+
     public function __construct(
-        private readonly ManagerRegistry   $registry,
+        ManagerRegistry   $registry,
         private readonly PaginatedResponse $paginatedResponse)
     {
-        parent::__construct($registry, Message::class);
+        $this->registry = $registry;
+        parent::__construct($this->registry, Message::class);
     }
 
     public function findPaginated(?MessageStatus $status, int $page = 1,  int $limit = 10): PaginatedResponse
@@ -43,7 +46,10 @@ class MessageRepository extends ServiceEntityRepository
         $qb->setMaxResults($limit)->setFirstResult($offset);
 
         $this->paginatedResponse->setTotal((int)$totalCountQ->getQuery()->getSingleScalarResult());
-        $this->paginatedResponse->setData($qb->getQuery()->getResult());
+
+        /** @var Message[] $entities */
+        $entities = $qb->getQuery()->getResult();
+        $this->paginatedResponse->setData($entities);
 
         return $this->paginatedResponse;
     }

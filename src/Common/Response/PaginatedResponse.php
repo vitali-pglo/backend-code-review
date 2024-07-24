@@ -9,7 +9,7 @@ class PaginatedResponse
     private int $total;
 
     /**
-     * @var Entity[]
+     * @var mixed[]
      */
     private array $data;
 
@@ -24,7 +24,7 @@ class PaginatedResponse
     }
 
     /**
-     * @return Entity[]
+     * @return mixed[]
      */
     public function getData(): array
     {
@@ -32,10 +32,10 @@ class PaginatedResponse
     }
 
     /**
-     * @param Entity[] $data
+     * @param mixed[] $data
      * @return void
      */
-    public function setData(array $data): void
+    public function setData($data): void
     {
         $this->data = $data;
     }

@@ -41,15 +41,18 @@ class MessageControllerTest extends WebTestCase
         $request = new Request(['status' => 1, 'page' => 1]);
         $paginatedResponse = $this->createMock(PaginatedResponse::class);
 
+        /** @phpstan-ignore-next-line */
         $this->messageService->expects($this->once())
             ->method('getPaginated')
             ->with($this->isInstanceOf(MessageStatus::class), 1)
             ->willReturn($paginatedResponse);
 
+        /** @phpstan-ignore-next-line */
         $this->serializer->expects($this->once())
             ->method('serialize')
             ->willReturn('[]');
 
+        /** @phpstan-ignore-next-line */
         $response = $this->controller->list($request);
 
         $this->assertInstanceOf(Response::class, $response);
@@ -86,7 +89,7 @@ class MessageControllerTest extends WebTestCase
      */
     private function assertJsonResponse(Response $response, array $expectedData): void
     {
-        $data = json_decode($response->getContent(), true);
+        $data = (array)json_decode((string)$response->getContent(), true);
         foreach ($expectedData as $key => $value) {
             $this->assertArrayHasKey($key, $data);
             $this->assertEquals($value, $data[$key]);

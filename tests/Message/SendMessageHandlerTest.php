@@ -29,6 +29,7 @@ class SendMessageHandlerTest extends TestCase
         $message->setText('Test message');
         $message->setStatus(MessageStatus::SENT);
 
+        /** @phpstan-ignore-next-line */
         $this->manager
             ->expects($this->once())
             ->method('persist')
@@ -38,6 +39,7 @@ class SendMessageHandlerTest extends TestCase
                     && $arg->getStatus() === MessageStatus::SENT;
             }));
 
+        /** @phpstan-ignore-next-line */
         $this->manager
             ->expects($this->once())
             ->method('flush');
