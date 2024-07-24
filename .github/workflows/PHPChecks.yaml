@@ -17,7 +17,7 @@ jobs:
         uses: shivammathur/setup-php@v2
         with:
           php-version: '8.2'
-          extensions: mbstring, pdo, xml, ctype, curl
+          extensions: mbstring, pdo, xml, ctype, curl, pdo_sqlite
           ini-values: post_max_size=256M, upload_max_filesize=256M
 
       - name: Install Composer dependencies
@@ -25,6 +25,9 @@ jobs:
 
       - name: Run PHPStan
         run: vendor/bin/phpstan analyse --no-progress --level=max src
+
+      - name: Prepare database
+        run: php bin/console doctrine:schema:update --force --env=test
 
       - name: Run PHPUnit
         run: vendor/bin/phpunit
