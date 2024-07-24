@@ -2,10 +2,12 @@
 
 namespace App\Repository;
 
+use App\Common\Response\PaginatedResponse;
 use App\Entity\Message;
+use App\Message\MessageStatus;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
+use Doctrine\ORM\Query;
 use Doctrine\Persistence\ManagerRegistry;
-use Symfony\Component\HttpFoundation\Request;
 
 /**
  * @extends ServiceEntityRepository<Message>
@@ -17,25 +19,38 @@ use Symfony\Component\HttpFoundation\Request;
  */
 class MessageRepository extends ServiceEntityRepository
 {
-    public function __construct(ManagerRegistry $registry)
+    private readonly ManagerRegistry $registry;
+
+    public function __construct(
+        ManagerRegistry   $registry,
+        private readonly PaginatedResponse $paginatedResponse)
     {
-        parent::__construct($registry, Message::class);
+        $this->registry = $registry;
+        parent::__construct($this->registry, Message::class);
     }
-    
-    public function by(Request $request): array
+
+    public function findPaginated(?MessageStatus $status, int $page = 1,  int $limit = 10): PaginatedResponse
     {
-        $status = $request->query->get('status');
-        
+        $offset = ($page - 1) * $limit;
+
+        $qb = $this->createQueryBuilder('s');
+        // Get the total count
+        $totalCountQ = $this->createQueryBuilder('s')
+            ->select('COUNT(s.id)');
+
         if ($status) {
-            $messages = $this->getEntityManager()
-                ->createQuery(
-                    sprintf("SELECT m FROM App\Entity\Message m WHERE m.status = '%s'", $status)
-                )
-                ->getResult();
-        } else {
-            $messages = $this->findAll();
+            $qb->andWhere('s.status = :status')->setParameter('status', $status);
+            $totalCountQ->andWhere('s.status = :status')->setParameter('status', $status);
         }
-        
-        return $messages;
+
+        $qb->setMaxResults($limit)->setFirstResult($offset);
+
+        $this->paginatedResponse->setTotal((int)$totalCountQ->getQuery()->getSingleScalarResult());
+
+        /** @var Message[] $entities */
+        $entities = $qb->getQuery()->getResult();
+        $this->paginatedResponse->setData($entities);
+
+        return $this->paginatedResponse;
     }
 }

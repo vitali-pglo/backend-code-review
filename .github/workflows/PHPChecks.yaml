@@ -1,0 +1,33 @@
+name: PHPStan/PHPUnit
+
+on:
+  pull_request:
+    branches:
+      - main  # Change this to your default branch if it's not 'main'
+
+jobs:
+  phpstan:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          extensions: mbstring, pdo, xml, ctype, curl, pdo_sqlite
+          ini-values: post_max_size=256M, upload_max_filesize=256M
+
+      - name: Install Composer dependencies
+        run: composer install --no-progress --no-suggest --prefer-dist --optimize-autoloader
+
+      - name: Run PHPStan
+        run: vendor/bin/phpstan analyse --no-progress --level=max src
+
+      - name: Prepare database
+        run: php bin/console doctrine:schema:update --force --env=test
+
+      - name: Run PHPUnit
+        run: vendor/bin/phpunit
